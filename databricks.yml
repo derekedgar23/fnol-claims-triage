@@ -1,0 +1,30 @@
+# Declarative Automation Bundle (formerly Databricks Asset Bundles)
+#   databricks bundle validate
+#   databricks bundle deploy -t dev
+#   databricks bundle run -t dev fnol_triage_retrain
+bundle:
+  name: fnol_claims_triage
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog
+    default: workspace
+  schema:
+    description: Schema for data, feature table and models
+    default: claims_ml
+
+targets:
+  dev:
+    mode: development          # [dev <you>] name prefix, schedules paused
+    default: true
+    variables:
+      schema: claims_ml_dev
+  prod:
+    mode: production
+    variables:
+      schema: claims_ml
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

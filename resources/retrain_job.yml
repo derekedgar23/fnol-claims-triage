@@ -1,0 +1,38 @@
+# MLOps "deploy code" job: the same code is deployed to dev and prod and retrains on that environment's data.
+#   refresh_features -> retrain_challenger -> champion_gate -> batch_score
+resources:
+  jobs:
+    fnol_triage_retrain:
+      name: fnol-triage-retrain
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: "0 0 6 1 * ?"     # 06:00 on the 1st of each month
+        timezone_id: America/Denver
+        pause_status: PAUSED                     # unpause in prod when you are ready
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      tasks:
+        - task_key: refresh_features
+          notebook_task:
+            notebook_path: ../jobs/refresh_features.py
+
+        - task_key: retrain_challenger
+          depends_on: [{task_key: refresh_features}]
+          notebook_task:
+            notebook_path: ../jobs/retrain_challenger.py
+          max_retries: 1
+
+        - task_key: champion_gate
+          depends_on: [{task_key: retrain_challenger}]
+          notebook_task:
+            notebook_path: ../jobs/champion_gate.py
+            base_parameters:
+              min_gain: "0.005"
+
+        - task_key: batch_score
+          depends_on: [{task_key: champion_gate}]
+          notebook_task:
+            notebook_path: ../jobs/batch_score.py

@@ -1,0 +1,7 @@
+{
+  "learning_rate": 0.19,
+  "max_depth": 3,
+  "max_iter": 350,
+  "min_samples_leaf": 60,
+  "l2_regularization": 3.8
+}

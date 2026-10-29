@@ -1,0 +1,28 @@
+[project]
+name = "claims-triage"
+version = "0.1.0"
+description = "FNOL large-loss triage on Databricks: feature store, MLflow, Unity Catalog registry, serving"
+requires-python = ">=3.10"
+dependencies = ["numpy", "pandas", "scikit-learn>=1.4"]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["notebooks", "jobs", "src/pipelines"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["claims_triage*"]
