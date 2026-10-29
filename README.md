@@ -1,6 +1,6 @@
 # FNOL Claims Triage on Databricks
 
-![ci](https://github.com/<your-github-user>/fnol-claims-triage/actions/workflows/ci.yml/badge.svg)
+![ci](https://github.com/derekedgar23/fnol-claims-triage/actions/workflows/ci.yml/badge.svg)
 
 Predict, at **First Notice of Loss**, which commercial P&C claims will become **large losses** (12-month incurred of $50,000 or more), and route them to the right adjuster on day one.
 
