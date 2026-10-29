@@ -62,7 +62,7 @@ flowchart LR
   subgraph Registry
     MF --> R[(UC model<br/>fnol_large_loss)]
     R --> A{champion vs<br/>challenger gate}
-    A -->|PR AUC +0.005| C[@champion]
+    A -->|"PR AUC +0.005"| C["@champion"]
   end
   subgraph Inference
     C --> B[fe.score_batch<br/>claims_triage_scores]
