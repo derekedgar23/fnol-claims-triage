@@ -122,6 +122,21 @@ def generate_claims(policies: pd.DataFrame, n: int = 40_000, seed: int = 11) -> 
     claims["large_loss"] = (claims["incurred_12m"] >= LARGE_LOSS_THRESHOLD).astype(int)
     # A handful of cause_of_loss values are not reported at FNOL
     claims.loc[rng.random(n) < 0.03, "cause_of_loss"] = None
+
+    # --- Fraud labels (~2.5% base rate) ---
+    # Fraud is more likely when: attorney involved at FNOL on a new business with prior claims,
+    # late reporting, injury claimed on a non-injury line, or suspiciously round incurred amounts.
+    fraud_score = (
+        0.60 * attorney
+        + 0.45 * (injury & ~is_injury_line.astype(int))          # injury on a non-injury line
+        + 0.40 * ((years < 2) & (prior >= 2)).astype(int)        # new insured, repeat claimer
+        + 0.30 * (report_lag > 45).astype(int)                   # delayed reporting
+        + 0.25 * attorney * injury                               # attorney + injury combo
+        + 0.20 * (incurred == np.round(incurred, -3)).astype(int)  # suspiciously round amounts
+        + rng.normal(0, 0.35, n)
+    )
+    claims["is_fraud"] = (fraud_score > np.percentile(fraud_score, 97.5)).astype(int)
+
     return claims
 
 
