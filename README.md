@@ -82,8 +82,10 @@ src/claims_triage/        tested Python package used by notebooks and jobs
   splits.py               CRC-32 split that matches in Python and Spark
   triage.py               tiers, reason codes, custom MLflow pyfunc models
   tracking.py             training-set loading via FeatureLookup, run logging, alias evaluation
+  fraud.py                fraud model builders: supervised GBM, Isolation Forest, LOF
 src/pipelines/            streaming scoring as a Lakeflow declarative pipeline
-notebooks/                00 to 07, the walkthrough (below)
+notebooks/                00 to 10, the walkthrough (below)
+app/triage_dashboard.py   Streamlit dashboard (runs locally, no Databricks needed)
 jobs/                     retraining job tasks (deploy-code MLOps)
 resources/retrain_job.yml job definition: refresh features, retrain, gate, batch score
 databricks.yml            bundle with dev and prod targets
@@ -105,6 +107,9 @@ tests/                    pytest suite run by GitHub Actions
 | 06 | `06_batch_streaming_inference` | pandas, `spark_udf`, and `fe.score_batch` scoring; streaming pipeline setup |
 | 07 | `07_model_serving` | Custom pyfunc (probability, tier, reason codes), endpoint with 90/10 traffic split, query, cleanup |
 | 08 | `08_automl_reference` | AutoML classification baseline (needs classic ML-runtime compute; reference on Free Edition) |
+| 08b | `08b_shap_explainability` | SHAP global importance, beeswarm, dependence plots, per-claim waterfall explanations |
+| 09 | `09_model_monitoring` | Feature drift (PSI, KS test), prediction drift, performance decay tracking, tier distribution shift |
+| 10 | `10_fraud_detection` | Unsupervised anomaly detection (Isolation Forest, LOF), supervised GBM, combined quadrant analysis |
 
 ## Run it
 
@@ -161,13 +166,23 @@ ruff check . && pytest -q
 | 3. Model development (algorithm choice, imbalance, estimators/transformers, pipelines, Hyperopt, grid/random/Bayesian, CV and model counts, metrics, log targets, bias/variance) | 03, 03b, 04 |
 | 4. Deployment (batch vs streaming vs real time, pandas batch, streaming with declarative pipelines, custom model serving, querying, traffic splitting) | 06, 07 |
 
+## Streamlit dashboard
+
+A local dashboard for exploring triage results, tier distributions, and claim-level drill-down:
+
+```bash
+pip install streamlit plotly scikit-learn
+streamlit run app/triage_dashboard.py
+```
+
+No Databricks connection needed. The app generates synthetic data and trains a model on startup.
+
 ## Limitations and next steps
 
 - Synthetic data: relationships are designed, so absolute metrics are optimistic compared with a real book.
-- No drift monitoring yet (data profiling on `claims_triage_scores` and on the feature table is the natural next step).
 - Probabilities are not explicitly calibrated; isotonic calibration on the validation set would make tier thresholds more stable.
-- Reason codes are rule based. SHAP values per claim would give model-based explanations.
 - The severity model's `expm1` back-transform underestimates the mean; a smearing correction would fix that for reserving use.
+- Fraud labels are synthetic; in production, SIU outcomes would feed back into the supervised model over time.
 
 ## Author
 
